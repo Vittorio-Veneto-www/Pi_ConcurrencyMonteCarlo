@@ -1,21 +1,6 @@
 #include"pi.h"
 #include"workload.h"
 
-void workload(long long repeat, int thread_id) //并发进程
-{
-    float x, y, randM = RAND_MAX;
-    long long *i = &repeat_threads[thread_id], *sum = &sum_threads[thread_id]; //使用全局变量，以便daemon进程统计运行情况；不同thread使用不同地址以免冲突
-    *sum = 0;
-    srand(time(0) + thread_id * 10); //不加id可能导致不同thread使用同一种子
-    for (*i = 0; *i < repeat; ++*i)
-    {
-        x = rand() / randM;
-        y = rand() / randM;
-        *sum += x * x + y * y < 1;
-    }
-    return;
-}
-
 long long input()
 {
     long long repeat;
@@ -46,7 +31,7 @@ void daemon(long long repeat)
 
     for (int i = 0; i < MAX_THREADS; i++) //多线程处理
     {
-        std::thread t(workload, repeat / MAX_THREADS + (repeat % MAX_THREADS > i), i); //创建线程
+        std::thread t(monte_carlo, repeat / MAX_THREADS + (repeat % MAX_THREADS > i), i); //创建线程
         t.detach(); //同时运行
     }
 
@@ -77,4 +62,19 @@ void daemon(long long repeat)
         sum += sum_threads[i], sum_repeat += repeat_threads[i];
     printf("\nTime used: %.1f second(s), Final estimation for Pi: %11.10lf\n", elapsed_time, (double)sum / sum_repeat * 4);
     system("pause");
+}
+
+void monte_carlo(long long repeat, int thread_id) //并发进程
+{
+    float x, y, randM = RAND_MAX;
+    long long *i = &repeat_threads[thread_id], *sum = &sum_threads[thread_id]; //使用全局变量，以便daemon进程统计运行情况；不同thread使用不同地址以免冲突
+    *sum = 0;
+    srand(time(0) + thread_id * 10); //不加id可能导致不同thread使用同一种子
+    for (*i = 0; *i < repeat; ++*i)
+    {
+        x = rand() / randM;
+        y = rand() / randM;
+        *sum += x * x + y * y < 1;
+    }
+    return;
 }

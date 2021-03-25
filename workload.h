@@ -5,6 +5,6 @@
 #include<chrono>
 #include<cstring>
 
-void workload(long long repeat, int threadId);
 long long input();
 void daemon(long long repeat);
+void monte_carlo(long long repeat, int threadId);
